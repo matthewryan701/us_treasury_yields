@@ -1,11 +1,26 @@
 from fredapi import Fred
 import pandas as pd
 import ssl, certifi
+import plotly.graph_objects as go
+import os
+from dotenv import load_dotenv
+from supabase import create_client
 
+# Creating SSL Context for FRED API
 ssl_context = ssl.create_default_context(cafile=certifi.where())
 
+# Initialising Supabase HTTPS connection
+load_dotenv()
+
+HOST = os.getenv("SUPABASE_HOST")
 fred = Fred(api_key="71aecb6dedf49b459fc19a63dced7582")
 
+url = f"https://{HOST}"
+key = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+
+supabase = create_client(url, key)
+
+# Importing data from the FRED API
 TREASURY_MATURITIES = {
     "1M": "DGS1MO",
     "3M": "DGS3MO",
@@ -21,15 +36,13 @@ TREASURY_MATURITIES = {
 }
 
 ADDITIONALS = {
-    # Volume-weighted median interest rate (FedFunds)
     "FedFunds": "FEDFUNDS",
-    # NBER Recession Indicator
-    "Recession": "USREC",
-    # Treasury Inflation-Protected Securities (TIPS)
     "TIPS_5Y": "DFII5",
     "TIPS_10Y": "DFII10",
     "TIPS_30Y": "DFII30",
 }
+
+DATA = {**TREASURY_MATURITIES, **ADDITIONALS}
 
 def download_fred_series(series_dict):
     df = pd.DataFrame()
@@ -37,6 +50,51 @@ def download_fred_series(series_dict):
         df[name] = fred.get_series(series_id=series_id)
     return df
 
-df = download_fred_series(TREASURY_MATURITIES)
+df = download_fred_series(DATA)
 
-print(df)
+# Data Cleaning 
+
+# Creating Date Column
+df.reset_index(inplace=True)
+df.rename(columns={"index": "Date"}, inplace=True)
+
+# Forward filling null values
+df["FedFunds"] = df["FedFunds"].ffill()
+df['TIPS_5Y'] = df['TIPS_5Y'].ffill()
+df['TIPS_10Y'] = df['TIPS_10Y'].ffill()
+df['TIPS_30Y'] = df['TIPS_30Y'].ffill()
+
+cols = ['1M', '3M', '6M', '1Y', '2Y', '3Y', '5Y', '7Y', '10Y', '20Y', '30Y']
+df[cols] = df[cols].ffill()
+
+# Renaming columns to match Supabase schema
+df = df.rename(columns={
+    "Date": "date",
+    "1M": "y_1m",
+    "3M": "y_3m",
+    "6M": "y_6m",
+    "1Y": "y_1y",
+    "2Y": "y_2y",
+    "3Y": "y_3y",
+    "5Y": "y_5y",
+    "7Y": "y_7y",
+    "10Y": "y_10y",
+    "20Y": "y_20y",
+    "30Y": "y_30y",
+    "FedFunds": "fed_funds",
+    "TIPS_5Y": "tips_5y",
+    "TIPS_10Y": "tips_10y",
+    "TIPS_30Y": "tips_30y"
+})
+
+# Formatting date column
+df["date"] = pd.to_datetime(df["date"]).dt.tz_localize("UTC")
+df["date"] = df["date"].dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+# Dropping remaining null values
+df = df.dropna(subset=["tips_30y", "tips_10y", "tips_5y"])
+
+# Uploading to Supabase
+data = df.to_dict(orient="records")
+
+supabase.table("yield_curve_data").insert(data).execute()
