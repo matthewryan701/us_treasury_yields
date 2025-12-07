@@ -41,11 +41,10 @@ df['PC1'] = pca_result[:,0]
 df['PC2'] = pca_result[:,1] 
 df['PC3'] = pca_result[:,2]
 
-print(df.info())
+row = df.iloc[-1]
 print("Uploading.")
 # Uploading to Principal Components to Supabase
-for _, row in df.iterrows():
-    supabase.table("yield_curve_data") \
+supabase.table("yield_curve_data") \
         .update({
             "PC1": row["PC1"],
             "PC2": row["PC2"],

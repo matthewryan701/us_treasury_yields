@@ -11,44 +11,44 @@ KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 
 supabase = create_client(f"https://{HOST}", KEY)
 
-# Selecting table
-rows = []
-offset = 0
-page_size = 1000
+# Selecting latest record from Supabase
+latest = (
+    supabase.table("yield_curve_data")
+    .select("*")
+    .order("date", desc=True)
+    .limit(1)
+    .execute()
+    .data[0]
+)
 
-while True:
-    response = supabase.table("yield_curve_data").select("*").range(offset, offset + page_size - 1).execute()
-    if not response.data:
-        break
-    rows.extend(response.data)
-    offset += page_size
-df = pd.DataFrame(rows)
+df = pd.DataFrame([latest])  
+
+row = df.iloc[0]    
 
 # Engineering spreads
-df['2s10s'] = df['y_10y'] - df['y_2y']
-df['3m10y'] = df['y_10y'] - df['y_3m']
-df['5s30s'] = df['y_30y'] - df['y_5y']
+spread_2s10s = row['y_10y'] - row['y_2y']
+spread_3m10y = row['y_10y'] - row['y_3m']
+spread_5s30s = row['y_30y'] - row['y_5y']
 
 # Engineering inversion
-df['2s10s_inversion'] = df['2s10s'] < 0
-df['3m10y_inversion'] = df['3m10y'] < 0
-df['5s30s_inversion'] = df['5s30s'] < 0
+inversion_2s10s = bool(spread_2s10s < 0)
+inversion_3m10y = bool(spread_3m10y < 0)
+inversion_5s30s = bool(spread_5s30s < 0)
 
 # Engineering curvature
-df['curvature'] = (df['y_2y'] + df['y_10y']) / 2 - df['y_5y']
+curvature = (row['y_2y'] + row['y_10y']) / 2 - row['y_5y']
 
 print("Uploading.")
-for _, row in df.iterrows():
-    supabase.table("yield_curve_data") \
-        .update({
-            "2s10s": row["2s10s"],
-            "3m10y": row["3m10y"],
-            "5s30s": row["5s30s"],
-            "2s10s_inversion": row["2s10s_inversion"],
-            "3m10y_inversion": row["3m10y_inversion"],
-            "5s30s_inversion": row["5s30s_inversion"],
-            "curvature": row["curvature"]
+supabase.table("yield_curve_data") \
+    .update({
+        "2s10s": spread_2s10s,
+        "3m10y": spread_3m10y,
+        "5s30s": spread_5s30s,
+        "2s10s_inversion": inversion_2s10s,
+        "3m10y_inversion": inversion_3m10y,
+        "5s30s_inversion": inversion_5s30s,
+        "curvature": curvature
         }) \
-        .eq("date", row["date"]) \
-        .execute()
+    .eq("date", row["date"]) \
+    .execute()
 print("Uploaded.")
