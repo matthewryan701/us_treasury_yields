@@ -1,14 +1,14 @@
-name: Daily Yield Data Update
+name: Daily Yield Pipeline
 
 on:
   schedule:
-    - cron: "0 17 * * *"   # Runs every day at 17:00 UTC (noon US ET)
+    - cron: "0 17 * * *"
   workflow_dispatch: {}
 
 jobs:
-  run-script:
-    runs-on: ubuntu-latest
 
+  yield_data:
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -26,11 +26,11 @@ jobs:
           SUPABASE_HOST: ${{ secrets.SUPABASE_HOST }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
-        run: python yield_data.py
+        run: python backend/yield_data.py
 
-# Running spread calculations on new data.
+
   spread_calculations:
-    needs: yield_data      # Ensures ordering
+    needs: yield_data
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -48,11 +48,11 @@ jobs:
         env:
           SUPABASE_HOST: ${{ secrets.SUPABASE_HOST }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-        run: python spread_calculations.py
+        run: python backend/spread_calculations.py
 
-# Running PCA on new data.
+
   pca_decomposition:
-    needs: spread_calculations   # Ensures ordering
+    needs: spread_calculations
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -70,4 +70,4 @@ jobs:
         env:
           SUPABASE_HOST: ${{ secrets.SUPABASE_HOST }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-        run: python pca_decomposition.py
+        run: python backend/pca_decomposition.py
