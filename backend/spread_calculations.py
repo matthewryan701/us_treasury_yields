@@ -37,6 +37,7 @@ df['5s30s_inversion'] = df['5s30s'] < 0
 # Engineering curvature
 df['curvature'] = (df['y_2y'] + df['y_10y']) / 2 - df['y_5y']
 
+print("Uploading.")
 for _, row in df.iterrows():
     supabase.table("yield_curve_data") \
         .update({
@@ -50,3 +51,4 @@ for _, row in df.iterrows():
         }) \
         .eq("date", row["date"]) \
         .execute()
+print("Uploaded.")
