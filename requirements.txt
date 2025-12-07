@@ -1,0 +1,7 @@
+fredapi
+pandas
+certifi
+plotly
+python-dotenv
+supabase
+scikit-learn

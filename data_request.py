@@ -13,7 +13,7 @@ ssl_context = ssl.create_default_context(cafile=certifi.where())
 load_dotenv()
 
 HOST = os.getenv("SUPABASE_HOST")
-fred = Fred(api_key="71aecb6dedf49b459fc19a63dced7582")
+fred = Fred(api_key=os.getenv("FRED_API_KEY"))
 
 url = f"https://{HOST}"
 key = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
