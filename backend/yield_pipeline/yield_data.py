@@ -20,7 +20,7 @@ key = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 
 supabase = create_client(url, key)
 
-# Importing data from the FRED API
+# Importing US-Treasury yield data from the FRED API
 TREASURY_MATURITIES = {
     "1M": "DGS1MO",
     "3M": "DGS3MO",
@@ -83,8 +83,6 @@ df = df.rename(columns={
 # Formatting date column
 df["date"] = pd.to_datetime(df["date"]).dt.tz_localize("UTC")
 df["date"] = df["date"].dt.strftime("%Y-%m-%dT%H:%M:%SZ")
-
-print(df.tail(10))
 
 # Uploading to Supabase
 data = df.to_dict(orient="records")
