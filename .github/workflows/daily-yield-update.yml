@@ -29,7 +29,7 @@ jobs:
         run: python yield_data.py
 
 # Running spread calculations on new data.
-spread_calculations:
+  spread_calculations:
     needs: yield_data      # Ensures ordering
     runs-on: ubuntu-latest
     steps:
@@ -51,7 +51,7 @@ spread_calculations:
         run: python spread_calculations.py
 
 # Running PCA on new data.
-pca_decomposition:
+  pca_decomposition:
     needs: spread_calculations   # Ensures ordering
     runs-on: ubuntu-latest
     steps:
