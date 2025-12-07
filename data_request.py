@@ -36,10 +36,7 @@ TREASURY_MATURITIES = {
 }
 
 ADDITIONALS = {
-    "FedFunds": "FEDFUNDS",
-    "TIPS_5Y": "DFII5",
-    "TIPS_10Y": "DFII10",
-    "TIPS_30Y": "DFII30",
+    "FedFunds": "FEDFUNDS"
 }
 
 DATA = {**TREASURY_MATURITIES, **ADDITIONALS}
@@ -60,9 +57,8 @@ df.rename(columns={"index": "Date"}, inplace=True)
 
 # Forward filling null values
 df["FedFunds"] = df["FedFunds"].ffill()
-df['TIPS_5Y'] = df['TIPS_5Y'].ffill()
-df['TIPS_10Y'] = df['TIPS_10Y'].ffill()
-df['TIPS_30Y'] = df['TIPS_30Y'].ffill()
+# Dealing with the 1 NaN value at the start 
+df["FedFunds"] = df["FedFunds"].bfill()
 
 cols = ['1M', '3M', '6M', '1Y', '2Y', '3Y', '5Y', '7Y', '10Y', '20Y', '30Y']
 df[cols] = df[cols].ffill()
@@ -81,20 +77,21 @@ df = df.rename(columns={
     "10Y": "y_10y",
     "20Y": "y_20y",
     "30Y": "y_30y",
-    "FedFunds": "fed_funds",
-    "TIPS_5Y": "tips_5y",
-    "TIPS_10Y": "tips_10y",
-    "TIPS_30Y": "tips_30y"
+    "FedFunds": "fed_funds"
 })
 
 # Formatting date column
 df["date"] = pd.to_datetime(df["date"]).dt.tz_localize("UTC")
 df["date"] = df["date"].dt.strftime("%Y-%m-%dT%H:%M:%SZ")
 
-# Dropping remaining null values
-df = df.dropna(subset=["tips_30y", "tips_10y", "tips_5y"])
+print(df.tail(10))
 
 # Uploading to Supabase
 data = df.to_dict(orient="records")
 
-supabase.table("yield_curve_data").insert(data).execute()
+# Uploading and skipping over duplicate values
+print("Uploading")
+supabase.table("yield_curve_data").upsert(data,
+                                          on_conflict="date",
+                                          ignore_duplicates=True).execute()
+print("Uploaded")
