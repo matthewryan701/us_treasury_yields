@@ -22,28 +22,47 @@ supabase = create_client(url, key)
 
 # Importing macroeconomic indicators from FRED API
 MACRO_INDICATORS = {
-    "CPI_YoY": "CPIAUCSL",           # Consumer Price Index, All Urban Consumers, Seasonally-Adjusted
-    "CPI_MoM": "CPIAUCSL",
-    "PCE": "PCE",                     # Personal Consumption Expenditures
-    "PPI": "PPIACO",                   # Producer Price Index, All Commodities
-    "GDP": "GDP",                  # Gross Domestic Product, quarterly
-    "UNEMPLOYMENT": "UNRATE",          # Unemployment Rate
+    "CPI_YoY": ("CPIAUCSL", "monthly"),
+    "CPI_MoM": ("CPIAUCSL", "monthly"),
+    "PCE": ("PCE", "monthly"),
+    "PPI": ("PPIACO", "monthly"),
+    "GDP": ("GDP", "quarterly"),
+    "UNEMPLOYMENT": ("UNRATE", "monthly"),
+    "CREDIT_SPREAD": ("BAMLC0A4CBBB", "daily"),
+    "JOLTS": ("JTSJOR", "monthly"),
+    "HOUSING_STARTS": ("HOUST", "monthly"),
+    "NBER": ("USRECD", "daily")
 }
 
 def download_fred_series(series_dict):
-    df = pd.DataFrame()
-    for name, series_id in series_dict.items():
+    df_list = []
+
+    for name, (series_id, freq) in series_dict.items():
         series = fred.get_series(series_id=series_id)
+        series.index = pd.to_datetime(series.index)
+
+        s = pd.DataFrame(series, columns=[name])
         if name == "CPI_YoY":
-            df[name] = series.pct_change(12) * 100
+            s[name] = series.pct_change(12) * 100
         elif name == "CPI_MoM":
-            df[name] = series.pct_change(1) * 100
+            s[name] = series.pct_change(1) * 100
         elif name == "PPI":
-            df[name] = series.pct_change(1) * 100
+            s[name] = series.pct_change(1) * 100
         elif name == "GDP":
-            df[name] = series.pct_change(1) * 100
+            s[name] = series.pct_change(1) * 100
         else:
-            df[name] = series
+            s[name] = series
+
+        if freq in ["monthly", "quarterly"]:
+            s = s.resample("D").ffill()
+        else:  # daily series
+            s = s.resample("D").ffill()
+
+        df_list.append(s)
+
+    df = pd.concat(df_list, axis=1)
+
+    df = df.ffill()
     
     return df
         
@@ -64,7 +83,11 @@ df = df.rename(columns={
     "PCE":"pce",
     "PPI":"ppi",
     "GDP":"gdp",
-    "UNEMPLOYMENT":"unemployment"
+    "UNEMPLOYMENT":"unemployment",
+    "CREDIT_SPREAD":"credit_spread",
+    "JOLTS":"jolts",
+    "HOUSING_STARTS":"housing_starts",
+    "NBER":"nber"
 })
 
 def month_to_quarter(date):
@@ -79,7 +102,10 @@ df["quarter"] = df["date"].apply(month_to_quarter)
 df["date"] = pd.to_datetime(df["date"]).dt.tz_localize("UTC")
 df["date"] = df["date"].dt.strftime("%Y-%m-%dT%H:%M:%SZ")
 
+df = df.dropna()
+
 print(df.info())
+print(df.head(10))
 print(df.tail(10))
 
 # Uploading to Supabase

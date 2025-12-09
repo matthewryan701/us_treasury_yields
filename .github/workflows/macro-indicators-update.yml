@@ -2,8 +2,8 @@ name: Macro Data Pipeline
 
 on:
   schedule:
-    # Every 3 days at 17:00 UTC
-    - cron: "0 17 */3 * *"
+    # Every day at 17:00 UTC
+    - cron: "0 17 * * *"
   workflow_dispatch: {}
 
 jobs:
