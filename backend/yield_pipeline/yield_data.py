@@ -22,46 +22,60 @@ supabase = create_client(url, key)
 
 # Importing US-Treasury yield data from the FRED API
 TREASURY_MATURITIES = {
-    "1M": "DGS1MO",
-    "3M": "DGS3MO",
-    "6M": "DGS6MO",
-    "1Y": "DGS1",
-    "2Y": "DGS2",
-    "3Y": "DGS3",
-    "5Y": "DGS5",
-    "7Y": "DGS7",
-    "10Y": "DGS10",
-    "20Y": "DGS20",
-    "30Y": "DGS30",
+    "1M": ("DGS1MO", "daily"),
+    "3M": ("DGS3MO", "daily"),
+    "6M": ("DGS6MO", "daily"),
+    "1Y": ("DGS1", "daily"),
+    "2Y": ("DGS2", "daily"),
+    "3Y": ("DGS3", "daily"),
+    "5Y": ("DGS5", "daily"),
+    "7Y": ("DGS7", "daily"),
+    "10Y": ("DGS10", "daily"),
+    "20Y": ("DGS20", "daily"),
+    "30Y": ("DGS30", "daily"),
 }
 
 ADDITIONALS = {
-    "FedFunds": "FEDFUNDS"
+    "FedFunds": ("FEDFUNDS", "daily")
 }
 
 DATA = {**TREASURY_MATURITIES, **ADDITIONALS}
 
 def download_fred_series(series_dict):
-    df = pd.DataFrame()
-    for name, series_id in series_dict.items():
-        df[name] = fred.get_series(series_id=series_id)
+    df_list = []
+    for name, (series_id, freq) in series_dict.items():
+        series = fred.get_series(series_id=series_id)
+        series.index = pd.to_datetime(series.index)
+
+        s = pd.DataFrame(series, columns=[name])
+        s[name] = series
+
+        if freq == "daily":
+            s = s.resample("D").ffill()
+        
+        df_list.append(s)
+    
+    df = pd.concat(df_list, axis=1)
+
+    df = df.ffill()
+
     return df
 
 df = download_fred_series(DATA)
 
-# Data Cleaning 
+# Forward filling to today's date
+full_range = pd.date_range(
+    start=df.index.min(), 
+    end=pd.Timestamp.utcnow().normalize().replace(tzinfo=None), 
+    freq="D"
+)
 
-# Creating Date Column
-df.reset_index(inplace=True)
-df.rename(columns={"index": "Date"}, inplace=True)
+df = df.reindex(full_range).rename_axis("date").reset_index()
 
-# Forward filling null values
-df["FedFunds"] = df["FedFunds"].ffill()
-# Dealing with the 1 NaN value at the start 
+# Dealing with the 1 NaN FedFunds value at the start 
 df["FedFunds"] = df["FedFunds"].bfill()
 
-cols = ['1M', '3M', '6M', '1Y', '2Y', '3Y', '5Y', '7Y', '10Y', '20Y', '30Y']
-df[cols] = df[cols].ffill()
+df = df.ffill()
 
 # Renaming columns to match Supabase schema
 df = df.rename(columns={
@@ -83,6 +97,8 @@ df = df.rename(columns={
 # Formatting date column
 df["date"] = pd.to_datetime(df["date"]).dt.tz_localize("UTC")
 df["date"] = df["date"].dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+df = df.dropna()
 
 # Uploading to Supabase
 data = df.to_dict(orient="records")

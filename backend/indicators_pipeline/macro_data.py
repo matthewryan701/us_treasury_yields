@@ -68,13 +68,18 @@ def download_fred_series(series_dict):
         
 df = download_fred_series(MACRO_INDICATORS)
 
-df = df.dropna(how="all", subset=["PCE"])
+# Forward filling to today's date
+full_range = pd.date_range(
+    start=df.index.min(), 
+    end=pd.Timestamp.utcnow().normalize().replace(tzinfo=None), 
+    freq="D"
+)
+
+df = df.reindex(full_range).rename_axis("date").reset_index()
 
 df = df.ffill()
 
-# Creating Date Column
-df.reset_index(inplace=True)
-df.rename(columns={"index": "Date"}, inplace=True)
+# Renaming columns
 
 df = df.rename(columns={
     "Date":"date",
@@ -90,6 +95,7 @@ df = df.rename(columns={
     "NBER":"nber"
 })
 
+# Creating quarter column
 def month_to_quarter(date):
     month = date.month
     year = date.year
@@ -103,10 +109,6 @@ df["date"] = pd.to_datetime(df["date"]).dt.tz_localize("UTC")
 df["date"] = df["date"].dt.strftime("%Y-%m-%dT%H:%M:%SZ")
 
 df = df.dropna()
-
-print(df.info())
-print(df.head(10))
-print(df.tail(10))
 
 # Uploading to Supabase
 data = df.to_dict(orient="records")
