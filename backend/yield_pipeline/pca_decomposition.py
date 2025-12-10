@@ -27,6 +27,7 @@ while True:
 df = pd.DataFrame(rows)
 
 df.set_index("date", inplace=True)
+df = df.sort_index()
 
 # Filtering for nominal US-treasuries to run the PCA on
 maturities = df[['y_1m','y_3m','y_6m','y_1y','y_2y','y_3y','y_5y','y_7y','y_10y','y_20y','y_30y']]
@@ -42,6 +43,7 @@ df['PC2'] = pca_result[:,1]
 df['PC3'] = pca_result[:,2]
 
 row = df.iloc[-1]
+
 print("Uploading.")
 # Uploading to Principal Components to Supabase
 supabase.table("yield_curve_data") \
