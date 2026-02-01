@@ -60,7 +60,7 @@ export function Navbar() {
 
         {/* GitHub button on the right */}
         <a
-          href="https://github.com"
+          href="https://github.com/matthewryan701/us_treasury_yields"
           target="_blank"
           rel="noopener noreferrer"
           className="text-foreground/70 transition-colors hover:text-foreground"

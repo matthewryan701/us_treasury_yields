@@ -1,19 +1,17 @@
 "use client"
 
+import Link from "next/link"
+
 import { useRef } from "react"
 import { Typewriter } from "@/components/typewriter"
-import { AnimatedButton } from "@/components/animated-button"
 import { AnimatedCard } from "@/components/animated-card"
 import { AnimatedTitle } from "@/components/animated-title"
 import { HexagonPattern } from "@/components/hexagon-pattern"
 import { Navbar } from "@/components/navbar"
+import { Footer } from "@/components/footer"
 
 export default function Home() {
   const platformRef = useRef<HTMLElement>(null)
-
-  const handleScrollToCards = () => {
-    platformRef.current?.scrollIntoView({ behavior: "smooth" })
-  }
 
   return (
     <main className="relative min-h-screen snap-y snap-proximity overflow-x-hidden bg-background">
@@ -24,22 +22,15 @@ export default function Home() {
       </div>
 
       <section className="relative z-10 flex h-screen w-full snap-start flex-col items-center justify-center px-4">
-        <div className="relative flex flex-col items-center justify-center gap-10 text-center">
-          <div className="relative">
-            <h1 className="relative z-10 text-6xl font-bold tracking-tight text-foreground md:text-8xl">YieldLabs</h1>
-          </div>
-
-          <div className="relative z-10 mt-0 h-8 max-w-2xl text-base md:text-lg">
+        <div className="text-center">
+          <h1 className="text-6xl font-bold text-foreground md:text-8xl">YieldLabs</h1>
+          <div className="mt-4 text-lg text-foreground/70">
             <Typewriter
               text="Modelling the US-Treasury Yield Curve with stochastic calculus and cutting-edge technology."
               typingSpeed={40}
               deletingSpeed={40}
               pauseDuration={3000}
             />
-          </div>
-
-          <div className="relative z-10 mt-8">
-            <AnimatedButton onClick={handleScrollToCards} />
           </div>
         </div>
       </section>
@@ -78,8 +69,8 @@ export default function Home() {
                     <path d="M7 16l4-4 4 4 5-6" />
                   </svg>
                 </div>
-                <a
-                  href="#"
+                <Link
+                  href="/yield-curve"
                   className="mt-8 flex items-center justify-center gap-2 text-foreground/70 hover:text-foreground transition-colors cursor-pointer"
                 >
                   <span className="text-base">View the current yield curve</span>
@@ -96,7 +87,7 @@ export default function Home() {
                     <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
                     <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
                   </svg>
-                </a>
+                </Link>
               </div>
             </AnimatedCard>
 
@@ -114,8 +105,8 @@ export default function Home() {
                     f′(x)
                   </span>
                 </div>
-                <a
-                  href="#"
+                <Link
+                  href="/stochastic-models"
                   className="mt-8 flex items-center justify-center gap-2 text-foreground/70 hover:text-foreground transition-colors cursor-pointer"
                 >
                   <span className="text-base">View stochastic paths</span>
@@ -132,7 +123,7 @@ export default function Home() {
                     <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
                     <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
                   </svg>
-                </a>
+                </Link>
               </div>
             </AnimatedCard>
           </div>
@@ -209,8 +200,8 @@ export default function Home() {
                 </div>
               </div>
 
-              <a
-                href="#"
+              <Link
+                href="/documentation"
                 className="mt-10 flex items-center justify-center gap-2 text-foreground/70 hover:text-foreground transition-colors cursor-pointer"
               >
                 <span className="text-base">View the full documentation here</span>
@@ -227,7 +218,7 @@ export default function Home() {
                   <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
                   <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
                 </svg>
-              </a>
+              </Link>
             </div>
           </AnimatedCard>
         </div>
@@ -317,114 +308,7 @@ export default function Home() {
         </div>
       </section>
 
-      <footer className="relative z-10 border-t border-foreground/10 bg-background px-4 pt-16 pb-8">
-        <div className="mx-auto max-w-7xl">
-          <div className="grid grid-cols-2 gap-12 md:grid-cols-4">
-            {/* Platform Column */}
-            <div>
-              <h3 className="mb-2 text-sm font-semibold uppercase tracking-wider text-foreground">Platform</h3>
-              <div className="mb-4 h-px w-full bg-foreground/20" />
-              <ul className="space-y-3">
-                <li>
-                  <a href="#" className="text-sm text-foreground/60 hover:text-foreground transition-colors">
-                    Current Market State
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-sm text-foreground/60 hover:text-foreground transition-colors">
-                    Model Dynamics
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-sm text-foreground/60 hover:text-foreground transition-colors">
-                    Documentation
-                  </a>
-                </li>
-              </ul>
-            </div>
-
-            {/* Data Sources Column */}
-            <div>
-              <h3 className="mb-2 text-sm font-semibold uppercase tracking-wider text-foreground">Data Sources</h3>
-              <div className="mb-4 h-px w-full bg-foreground/20" />
-              <ul className="space-y-3">
-                <li>
-                  <a href="#" className="text-sm text-foreground/60 hover:text-foreground transition-colors">
-                    FRED API
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-sm text-foreground/60 hover:text-foreground transition-colors">
-                    Trading Economics API
-                  </a>
-                </li>
-              </ul>
-            </div>
-
-            {/* Resources Column */}
-            <div>
-              <h3 className="mb-2 text-sm font-semibold uppercase tracking-wider text-foreground">Resources</h3>
-              <div className="mb-4 h-px w-full bg-foreground/20" />
-              <ul className="space-y-3">
-                <li>
-                  <a href="#" className="text-sm text-foreground/60 hover:text-foreground transition-colors">
-                    FAQ
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-sm text-foreground/60 hover:text-foreground transition-colors">
-                    Supabase
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-sm text-foreground/60 hover:text-foreground transition-colors">
-                    FastAPI
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-sm text-foreground/60 hover:text-foreground transition-colors">
-                    Scikit-Learn
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-sm text-foreground/60 hover:text-foreground transition-colors">
-                    V0
-                  </a>
-                </li>
-              </ul>
-            </div>
-
-            {/* Contacts Column */}
-            <div>
-              <h3 className="mb-2 text-sm font-semibold uppercase tracking-wider text-foreground">Contacts</h3>
-              <div className="mb-4 h-px w-full bg-foreground/20" />
-              <ul className="space-y-3">
-                <li>
-                  <a href="#" className="text-sm text-foreground/60 hover:text-foreground transition-colors">
-                    LinkedIn
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-sm text-foreground/60 hover:text-foreground transition-colors">
-                    GitHub
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-sm text-foreground/60 hover:text-foreground transition-colors">
-                    Email
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          {/* Bottom section with logo */}
-          <div className="mt-12 flex items-center justify-between border-t border-foreground/10 pt-8">
-            <span className="text-2xl font-bold tracking-tight text-foreground">YieldLabs</span>
-            <span className="text-sm text-foreground/40">© 2026 YieldLabs. All rights reserved.</span>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </main>
   )
 }
