@@ -81,10 +81,3 @@ rates = simulate_vasicek(
 )
 
 time = np.linspace(0, 5, rates.shape[1])
-
-plt.figure(figsize=(10, 6))
-plt.plot(time, rates.T, alpha=0.6)
-plt.xlabel("Time (years)")
-plt.ylabel("Short Rate")
-plt.title("Vasicek Short-Rate Simulations")
-plt.show()
