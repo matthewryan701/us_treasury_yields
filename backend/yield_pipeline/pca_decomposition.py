@@ -13,19 +13,16 @@ KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 
 supabase = create_client(f"https://{HOST}", KEY)
 
-# Selecting table
-rows = []
-offset = 0
-page_size = 1000
+# Loading last 5 yield_curve_data table from Supabase
+response = (
+    supabase.table("yield_curve_data")
+    .select("*")
+    .order("date", desc=True)
+    .limit(5)
+    .execute()
+)
 
-while True:
-    response = supabase.table("yield_curve_data").select("*").range(offset, offset + page_size - 1).execute()
-    if not response.data:
-        break
-    rows.extend(response.data)
-    offset += page_size
-df = pd.DataFrame(rows)
-
+df = pd.DataFrame(response.data)
 df.set_index("date", inplace=True)
 df = df.sort_index()
 
