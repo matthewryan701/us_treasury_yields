@@ -26,4 +26,4 @@ jobs:
           SUPABASE_HOST: ${{ secrets.SUPABASE_HOST }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
-        run: python backend/duration_pipeline/durations_calculations.py
+        run: python backend/duration_pipeline/duration_calculations.py
