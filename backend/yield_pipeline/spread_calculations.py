@@ -16,7 +16,7 @@ latest = (
     supabase.table("yield_curve_data")
     .select("*")
     .order("date", desc=True)
-    .limit(1)
+    .limit(5)
     .execute()
     .data[0]
 )
