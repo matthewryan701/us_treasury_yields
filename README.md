@@ -68,5 +68,3 @@ Frontend showing visualisations, mathematical calculations and summary statistic
 Python scripts scheduled to run daily to store new, clean data in Supabase.
 
 - **YAML** — Script scheduling files.
-
-![Data Pipeline](data_pipeline_vertical_stack_v2.png)
